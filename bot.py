@@ -1,8 +1,11 @@
 import telebot
 import time
+import os
+import threading
+from flask import Flask
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup
 
-# TOKEN
+# TOKEN (Render me env variable use karna)
 TOKEN = "8594033718:AAGjW0tWT3iFin7z8hegBlCkffdOR0yFM5U"
 bot = telebot.TeleBot(TOKEN, threaded=False)
 
@@ -166,12 +169,22 @@ def admin_view(message):
 
         bot.send_message(message.chat.id, text)
 
-# RUN
-print("BOT STARTED")
+# ------------------ FIX FOR RENDER ------------------
 
-while True:
-    try:
-        bot.infinity_polling(timeout=60, long_polling_timeout=30)
-    except Exception as e:
-        print("Error:", e)
-        time.sleep(5)
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return "Bot is running 🚀"
+
+def run_bot():
+    while True:
+        try:
+            bot.infinity_polling(timeout=60, long_polling_timeout=30)
+        except Exception as e:
+            print("Error:", e)
+            time.sleep(5)
+
+threading.Thread(target=run_bot).start()
+
+app.run(host="0.0.0.0", port=10000)
