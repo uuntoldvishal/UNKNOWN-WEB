@@ -5,6 +5,7 @@ from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeybo
 # TOKEN
 TOKEN = "8594033718:AAGjW0tWT3iFin7z8hegBlCkffdOR0yFM5U"
 bot = telebot.TeleBot(TOKEN, threaded=False)
+
 # ADMIN
 ADMIN_ID = 8266427252
 
@@ -47,8 +48,11 @@ def join_buttons():
 # MAIN MENU
 def main_menu():
     markup = ReplyKeyboardMarkup(resize_keyboard=True)
-    for name in buttons_data:
-        markup.add(name)
+    if not buttons_data:
+        markup.add("No Data")
+    else:
+        for name in buttons_data.keys():
+            markup.add(name)
     return markup
 
 # START
@@ -78,7 +82,7 @@ def open_button(message):
     for i in range(len(items)):
         markup.add(InlineKeyboardButton(f"Item {i+1}", callback_data=f"item_{name}_{i}"))
 
-    bot.send_message(message.chat.id, f"{name}", reply_markup=markup)
+    bot.send_message(message.chat.id, name, reply_markup=markup)
 
 # SEND ITEM
 @bot.callback_query_handler(func=lambda call: call.data.startswith("item_"))
@@ -106,6 +110,7 @@ def save_btn(message):
     name = message.text.strip()
     buttons_data[name] = []
     bot.send_message(message.chat.id, f"Button '{name}' created")
+    bot.send_message(message.chat.id, "Updated Menu 👇", reply_markup=main_menu())
 
 # ADD ITEM
 @bot.message_handler(commands=['additem'])
@@ -146,48 +151,6 @@ def save_item(message, name):
 
     except Exception as e:
         bot.send_message(message.chat.id, f"Error: {e}")
-
-# DELETE BUTTON
-@bot.message_handler(commands=['delbtn'])
-def del_btn(message):
-    if message.from_user.id == ADMIN_ID:
-        msg = bot.send_message(message.chat.id, "Send button name:")
-        bot.register_next_step_handler(msg, confirm_del_btn)
-
-def confirm_del_btn(message):
-    name = message.text.strip()
-    if name in buttons_data:
-        del buttons_data[name]
-        bot.send_message(message.chat.id, "Button deleted")
-    else:
-        bot.send_message(message.chat.id, "Button not found")
-
-# DELETE ITEM
-@bot.message_handler(commands=['delitem'])
-def del_item(message):
-    if message.from_user.id == ADMIN_ID:
-        msg = bot.send_message(message.chat.id, "Send button name:")
-        bot.register_next_step_handler(msg, ask_index)
-
-def ask_index(message):
-    name = message.text.strip()
-    if name not in buttons_data:
-        bot.send_message(message.chat.id, "Button not found")
-        return
-
-    msg = bot.send_message(message.chat.id, "Send item number:")
-    bot.register_next_step_handler(msg, delete_item, name)
-
-def delete_item(message, name):
-    try:
-        index = int(message.text) - 1
-        if index < len(buttons_data[name]):
-            buttons_data[name].pop(index)
-            bot.send_message(message.chat.id, "Item deleted")
-        else:
-            bot.send_message(message.chat.id, "Invalid number")
-    except:
-        bot.send_message(message.chat.id, "Send valid number")
 
 # ADMIN PANEL
 @bot.message_handler(commands=['admin'])
