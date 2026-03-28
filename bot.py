@@ -7,7 +7,7 @@ from flask import Flask
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup
 
 # ---------------- CONFIG ----------------
-TOKEN = os.getenv("8594033718:AAGjW0tWT3iFin7z8hegBlCkffdOR0yFM5U")  # Render env me dalna
+TOKEN = os.getenv("8594033718:AAGjW0tWT3iFin7z8hegBlCkffdOR0yFM5U")
 ADMIN_ID = 8266427252
 DATA_FILE = "data.json"
 
@@ -26,12 +26,13 @@ def save_data():
 
 buttons_data = load_data()
 
-# ---------------- CHANNEL LINKS ----------------
+# ---------------- CHANNEL LINKS (4 SHOW होंगे) ----------------
 ch1 = "https://t.me/+Ws43qQ4tWZQwOGE1"
 ch2 = "https://t.me/+XNLWdHJ7n9kzOGQ1"
 ch3 = "https://t.me/+spxy0njzur9hNTI1"
 ch4 = "https://t.me/+l_Yj8PXYUhc1MDE1"
 
+# ---------------- CHANNEL CHECK (सिर्फ 3 CHECK होंगे) ----------------
 channels = [
     -1003803906100,
     -1003838757488,
@@ -80,7 +81,7 @@ def check(call):
     if check_join(call.from_user.id):
         bot.send_message(call.message.chat.id, "Select option 👇", reply_markup=main_menu())
     else:
-        bot.answer_callback_query(call.id, "Join channels first ❌")
+        bot.answer_callback_query(call.id, "Join all required channels ❌")
 
 # ---------------- BUTTON CLICK ----------------
 @bot.message_handler(func=lambda message: message.text in buttons_data)
@@ -134,7 +135,7 @@ def save_btn(message):
     save_data()
 
     bot.send_message(message.chat.id, f"✅ Button '{name}' created")
-    bot.send_message(message.chat.id, "Menu updated 👇", reply_markup=main_menu())
+    bot.send_message(message.chat.id, "Updated Menu 👇", reply_markup=main_menu())
 
 # ---------------- DELETE BUTTON ----------------
 @bot.message_handler(commands=['delbtn'])
@@ -229,7 +230,7 @@ def run_bot():
         try:
             bot.infinity_polling()
         except Exception as e:
-            print("Error:", e)
+            print(e)
             time.sleep(5)
 
 threading.Thread(target=run_bot).start()
