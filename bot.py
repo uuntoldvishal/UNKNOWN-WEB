@@ -2,32 +2,35 @@ import telebot
 import time
 import os
 import threading
+import json
 from flask import Flask
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup
 
-# TOKEN (Render me env variable use karna)
 TOKEN = "8594033718:AAGjW0tWT3iFin7z8hegBlCkffdOR0yFM5U"
-bot = telebot.TeleBot(TOKEN, threaded=False)
+bot = telebot.TeleBot(TOKEN, threaded=True)
 
-# ADMIN
 ADMIN_ID = 8266427252
 
-# STORAGE
-buttons_data = {}
+DATA_FILE = "data.json"
 
-# CHANNEL LINKS
-ch1 = "https://t.me/+Ws43qQ4tWZQwOGE1"
-ch2 = "https://t.me/+XNLWdHJ7n9kzOGQ1"
-ch3 = "https://t.me/+spxy0njzur9hNTI1"
-ch4 = "https://t.me/+l_Yj8PXYUhc1MDE1"
+# ---------------- SAVE / LOAD ----------------
 
-channels = [
-    -1003803906100,
-    -1003838757488,
-    -1003835376484
-]
+def load_data():
+    if os.path.exists(DATA_FILE):
+        with open(DATA_FILE, "r") as f:
+            return json.load(f)
+    return {}
 
-# JOIN CHECK
+def save_data(data):
+    with open(DATA_FILE, "w") as f:
+        json.dump(data, f)
+
+buttons_data = load_data()
+
+# ---------------- CHANNEL ----------------
+
+channels = [-1003803906100, -1003838757488, -1003835376484]
+
 def check_join(user_id):
     try:
         for ch in channels:
@@ -38,17 +41,14 @@ def check_join(user_id):
     except:
         return False
 
-# JOIN BUTTONS
 def join_buttons():
     markup = InlineKeyboardMarkup()
-    markup.add(InlineKeyboardButton("Channel 1", url=ch1))
-    markup.add(InlineKeyboardButton("Channel 2", url=ch2))
-    markup.add(InlineKeyboardButton("Channel 3", url=ch3))
-    markup.add(InlineKeyboardButton("Channel 4", url=ch4))
+    markup.add(InlineKeyboardButton("Join Channel", url="https://t.me"))
     markup.add(InlineKeyboardButton("Continue", callback_data="check"))
     return markup
 
-# MAIN MENU
+# ---------------- MENU ----------------
+
 def main_menu():
     markup = ReplyKeyboardMarkup(resize_keyboard=True)
     if not buttons_data:
@@ -58,20 +58,23 @@ def main_menu():
             markup.add(name)
     return markup
 
-# START
+# ---------------- START ----------------
+
 @bot.message_handler(commands=['start'])
 def start(message):
-    bot.send_message(message.chat.id, "Join all channels first", reply_markup=join_buttons())
+    bot.send_message(message.chat.id, "Join channels first", reply_markup=join_buttons())
 
-# CHECK JOIN
+# ---------------- CHECK ----------------
+
 @bot.callback_query_handler(func=lambda call: call.data == "check")
 def check(call):
     if check_join(call.from_user.id):
-        bot.send_message(call.message.chat.id, "Select option", reply_markup=main_menu())
+        bot.send_message(call.message.chat.id, "Select option 👇", reply_markup=main_menu())
     else:
-        bot.answer_callback_query(call.id, "Join channels first")
+        bot.answer_callback_query(call.id, "Join channels first ❌")
 
-# BUTTON CLICK
+# ---------------- BUTTON CLICK ----------------
+
 @bot.message_handler(func=lambda message: message.text in buttons_data)
 def open_button(message):
     name = message.text
@@ -83,15 +86,16 @@ def open_button(message):
 
     markup = InlineKeyboardMarkup()
     for i in range(len(items)):
-        markup.add(InlineKeyboardButton(f"Item {i+1}", callback_data=f"item_{name}_{i}"))
+        markup.add(InlineKeyboardButton(f"Item {i+1}", callback_data=f"{name}|{i}"))
 
     bot.send_message(message.chat.id, name, reply_markup=markup)
 
-# SEND ITEM
-@bot.callback_query_handler(func=lambda call: call.data.startswith("item_"))
+# ---------------- SEND ITEM ----------------
+
+@bot.callback_query_handler(func=lambda call: "|" in call.data)
 def send_item(call):
     try:
-        _, name, index = call.data.split("_")
+        name, index = call.data.split("|")
         index = int(index)
         data = buttons_data[name][index]
 
@@ -99,34 +103,48 @@ def send_item(call):
             bot.send_document(call.message.chat.id, data)
         except:
             bot.send_message(call.message.chat.id, data)
-    except:
+
+    except Exception as e:
         bot.send_message(call.message.chat.id, "Error")
 
-# ADD BUTTON
+# ---------------- ADD BUTTON ----------------
+
 @bot.message_handler(commands=['addbtn'])
 def add_btn(message):
-    if message.from_user.id == ADMIN_ID:
-        msg = bot.send_message(message.chat.id, "Send button name:")
-        bot.register_next_step_handler(msg, save_btn)
+    if message.from_user.id != ADMIN_ID:
+        return
+
+    msg = bot.send_message(message.chat.id, "Send button name:")
+    bot.register_next_step_handler(msg, save_btn)
 
 def save_btn(message):
     name = message.text.strip()
-    buttons_data[name] = []
-    bot.send_message(message.chat.id, f"Button '{name}' created")
-    bot.send_message(message.chat.id, "Updated Menu 👇", reply_markup=main_menu())
 
-# ADD ITEM
+    if name in buttons_data:
+        bot.send_message(message.chat.id, "Already exists ❌")
+        return
+
+    buttons_data[name] = []
+    save_data(buttons_data)
+
+    bot.send_message(message.chat.id, f"✅ Button '{name}' created")
+    bot.send_message(message.chat.id, "Menu updated 👇", reply_markup=main_menu())
+
+# ---------------- ADD ITEM ----------------
+
 @bot.message_handler(commands=['additem'])
 def add_item(message):
-    if message.from_user.id == ADMIN_ID:
-        msg = bot.send_message(message.chat.id, "Send button name:")
-        bot.register_next_step_handler(msg, get_item_name)
+    if message.from_user.id != ADMIN_ID:
+        return
+
+    msg = bot.send_message(message.chat.id, "Send button name:")
+    bot.register_next_step_handler(msg, get_item_name)
 
 def get_item_name(message):
     name = message.text.strip()
 
     if name not in buttons_data:
-        bot.send_message(message.chat.id, "Button not found")
+        bot.send_message(message.chat.id, "Button not found ❌")
         return
 
     msg = bot.send_message(message.chat.id, "Send file or text:")
@@ -147,29 +165,33 @@ def save_item(message, name):
             buttons_data[name].append(message.text)
 
         else:
-            bot.send_message(message.chat.id, "Unsupported type")
+            bot.send_message(message.chat.id, "Unsupported ❌")
             return
 
-        bot.send_message(message.chat.id, "Item added")
+        save_data(buttons_data)
+        bot.send_message(message.chat.id, "✅ Item added")
 
     except Exception as e:
         bot.send_message(message.chat.id, f"Error: {e}")
 
-# ADMIN PANEL
+# ---------------- ADMIN ----------------
+
 @bot.message_handler(commands=['admin'])
 def admin_view(message):
-    if message.from_user.id == ADMIN_ID:
-        if not buttons_data:
-            bot.send_message(message.chat.id, "No data")
-            return
+    if message.from_user.id != ADMIN_ID:
+        return
 
-        text = "DATA:\n\n"
-        for k, v in buttons_data.items():
-            text += f"{k} → {len(v)} items\n"
+    if not buttons_data:
+        bot.send_message(message.chat.id, "No data ❌")
+        return
 
-        bot.send_message(message.chat.id, text)
+    text = "📊 DATA:\n\n"
+    for k, v in buttons_data.items():
+        text += f"{k} → {len(v)} items\n"
 
-# ------------------ FIX FOR RENDER ------------------
+    bot.send_message(message.chat.id, text)
+
+# ---------------- RENDER ----------------
 
 app = Flask(__name__)
 
@@ -180,9 +202,9 @@ def home():
 def run_bot():
     while True:
         try:
-            bot.infinity_polling(timeout=60, long_polling_timeout=30)
+            bot.infinity_polling()
         except Exception as e:
-            print("Error:", e)
+            print(e)
             time.sleep(5)
 
 threading.Thread(target=run_bot).start()
