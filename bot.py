@@ -7,7 +7,7 @@ from flask import Flask
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup
 
 # ---------------- CONFIG ----------------
-TOKEN = "8594033718:AAGjW0tWT3iFin7z8hegBlCkffdOR0yFM5U"
+TOKEN = os.getenv("8594033718:AAGjW0tWT3iFin7z8hegBlCkffdOR0yFM5U")  # Render env me dalna
 ADMIN_ID = 8266427252
 DATA_FILE = "data.json"
 
@@ -20,15 +20,25 @@ def load_data():
             return json.load(f)
     return {}
 
-def save_data(data):
+def save_data():
     with open(DATA_FILE, "w") as f:
-        json.dump(data, f)
+        json.dump(buttons_data, f)
 
 buttons_data = load_data()
 
-# ---------------- CHANNEL CHECK ----------------
-channels = [-1003803906100, -1003838757488, -1003835376484]
+# ---------------- CHANNEL LINKS ----------------
+ch1 = "https://t.me/+Ws43qQ4tWZQwOGE1"
+ch2 = "https://t.me/+XNLWdHJ7n9kzOGQ1"
+ch3 = "https://t.me/+spxy0njzur9hNTI1"
+ch4 = "https://t.me/+l_Yj8PXYUhc1MDE1"
 
+channels = [
+    -1003803906100,
+    -1003838757488,
+    -1003835376484
+]
+
+# ---------------- JOIN CHECK ----------------
 def check_join(user_id):
     try:
         for ch in channels:
@@ -39,9 +49,13 @@ def check_join(user_id):
     except:
         return False
 
+# ---------------- JOIN BUTTONS ----------------
 def join_buttons():
     markup = InlineKeyboardMarkup()
-    markup.add(InlineKeyboardButton("Join Channel", url="https://t.me"))
+    markup.add(InlineKeyboardButton("Channel 1", url=ch1))
+    markup.add(InlineKeyboardButton("Channel 2", url=ch2))
+    markup.add(InlineKeyboardButton("Channel 3", url=ch3))
+    markup.add(InlineKeyboardButton("Channel 4", url=ch4))
     markup.add(InlineKeyboardButton("Continue", callback_data="check"))
     return markup
 
@@ -58,7 +72,7 @@ def main_menu():
 # ---------------- START ----------------
 @bot.message_handler(commands=['start'])
 def start(message):
-    bot.send_message(message.chat.id, "Join channels first", reply_markup=join_buttons())
+    bot.send_message(message.chat.id, "Join all channels first", reply_markup=join_buttons())
 
 # ---------------- CHECK ----------------
 @bot.callback_query_handler(func=lambda call: call.data == "check")
@@ -117,7 +131,7 @@ def save_btn(message):
         return
 
     buttons_data[name] = []
-    save_data(buttons_data)
+    save_data()
 
     bot.send_message(message.chat.id, f"✅ Button '{name}' created")
     bot.send_message(message.chat.id, "Menu updated 👇", reply_markup=main_menu())
@@ -139,7 +153,7 @@ def confirm_delete_btn(message):
         return
 
     del buttons_data[name]
-    save_data(buttons_data)
+    save_data()
 
     bot.send_message(message.chat.id, f"✅ Button '{name}' deleted")
     bot.send_message(message.chat.id, "Updated Menu 👇", reply_markup=main_menu())
@@ -181,7 +195,7 @@ def save_item(message, name):
             bot.send_message(message.chat.id, "Unsupported ❌")
             return
 
-        save_data(buttons_data)
+        save_data()
         bot.send_message(message.chat.id, "✅ Item added")
 
     except Exception as e:
@@ -208,14 +222,14 @@ app = Flask(__name__)
 
 @app.route('/')
 def home():
-    return "Bot running 🚀"
+    return "Bot is running 🚀"
 
 def run_bot():
     while True:
         try:
             bot.infinity_polling()
         except Exception as e:
-            print(e)
+            print("Error:", e)
             time.sleep(5)
 
 threading.Thread(target=run_bot).start()
