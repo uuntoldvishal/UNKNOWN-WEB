@@ -6,15 +6,14 @@ import json
 from flask import Flask
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup
 
+# ---------------- CONFIG ----------------
 TOKEN = "8594033718:AAGjW0tWT3iFin7z8hegBlCkffdOR0yFM5U"
-bot = telebot.TeleBot(TOKEN, threaded=True)
-
 ADMIN_ID = 8266427252
-
 DATA_FILE = "data.json"
 
-# ---------------- SAVE / LOAD ----------------
+bot = telebot.TeleBot(TOKEN, threaded=True)
 
+# ---------------- LOAD / SAVE ----------------
 def load_data():
     if os.path.exists(DATA_FILE):
         with open(DATA_FILE, "r") as f:
@@ -27,8 +26,7 @@ def save_data(data):
 
 buttons_data = load_data()
 
-# ---------------- CHANNEL ----------------
-
+# ---------------- CHANNEL CHECK ----------------
 channels = [-1003803906100, -1003838757488, -1003835376484]
 
 def check_join(user_id):
@@ -48,7 +46,6 @@ def join_buttons():
     return markup
 
 # ---------------- MENU ----------------
-
 def main_menu():
     markup = ReplyKeyboardMarkup(resize_keyboard=True)
     if not buttons_data:
@@ -59,13 +56,11 @@ def main_menu():
     return markup
 
 # ---------------- START ----------------
-
 @bot.message_handler(commands=['start'])
 def start(message):
     bot.send_message(message.chat.id, "Join channels first", reply_markup=join_buttons())
 
 # ---------------- CHECK ----------------
-
 @bot.callback_query_handler(func=lambda call: call.data == "check")
 def check(call):
     if check_join(call.from_user.id):
@@ -74,7 +69,6 @@ def check(call):
         bot.answer_callback_query(call.id, "Join channels first ❌")
 
 # ---------------- BUTTON CLICK ----------------
-
 @bot.message_handler(func=lambda message: message.text in buttons_data)
 def open_button(message):
     name = message.text
@@ -91,7 +85,6 @@ def open_button(message):
     bot.send_message(message.chat.id, name, reply_markup=markup)
 
 # ---------------- SEND ITEM ----------------
-
 @bot.callback_query_handler(func=lambda call: "|" in call.data)
 def send_item(call):
     try:
@@ -104,11 +97,10 @@ def send_item(call):
         except:
             bot.send_message(call.message.chat.id, data)
 
-    except Exception as e:
-        bot.send_message(call.message.chat.id, "Error")
+    except:
+        bot.send_message(call.message.chat.id, "Error ❌")
 
 # ---------------- ADD BUTTON ----------------
-
 @bot.message_handler(commands=['addbtn'])
 def add_btn(message):
     if message.from_user.id != ADMIN_ID:
@@ -130,8 +122,29 @@ def save_btn(message):
     bot.send_message(message.chat.id, f"✅ Button '{name}' created")
     bot.send_message(message.chat.id, "Menu updated 👇", reply_markup=main_menu())
 
-# ---------------- ADD ITEM ----------------
+# ---------------- DELETE BUTTON ----------------
+@bot.message_handler(commands=['delbtn'])
+def delete_btn(message):
+    if message.from_user.id != ADMIN_ID:
+        return
 
+    msg = bot.send_message(message.chat.id, "Send button name to delete:")
+    bot.register_next_step_handler(msg, confirm_delete_btn)
+
+def confirm_delete_btn(message):
+    name = message.text.strip()
+
+    if name not in buttons_data:
+        bot.send_message(message.chat.id, "Button not found ❌")
+        return
+
+    del buttons_data[name]
+    save_data(buttons_data)
+
+    bot.send_message(message.chat.id, f"✅ Button '{name}' deleted")
+    bot.send_message(message.chat.id, "Updated Menu 👇", reply_markup=main_menu())
+
+# ---------------- ADD ITEM ----------------
 @bot.message_handler(commands=['additem'])
 def add_item(message):
     if message.from_user.id != ADMIN_ID:
@@ -175,7 +188,6 @@ def save_item(message, name):
         bot.send_message(message.chat.id, f"Error: {e}")
 
 # ---------------- ADMIN ----------------
-
 @bot.message_handler(commands=['admin'])
 def admin_view(message):
     if message.from_user.id != ADMIN_ID:
@@ -191,13 +203,12 @@ def admin_view(message):
 
     bot.send_message(message.chat.id, text)
 
-# ---------------- RENDER ----------------
-
+# ---------------- KEEP ALIVE ----------------
 app = Flask(__name__)
 
 @app.route('/')
 def home():
-    return "Bot is running 🚀"
+    return "Bot running 🚀"
 
 def run_bot():
     while True:
