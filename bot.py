@@ -1,30 +1,27 @@
 import telebot
-import os
-import json
-import time
+import threading
 from flask import Flask
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-# -------- CONFIG --------
+# ===== CONFIG =====
 TOKEN = "8594033718:AAGjW0tWT3iFin7z8hegBlCkffdOR0yFM5U"
-ADMIN_ID = 8266427252
-
 bot = telebot.TeleBot(TOKEN, threaded=True)
 
-# -------- CHANNEL LINKS (4 SHOW) --------
+# ===== CHANNEL LINKS (4 SHOW) =====
 ch1 = "https://t.me/+ws43qQ4tWZQwOGE1"
 ch2 = "https://t.me/+XNLWdHJ7n9kzOGQ1"
 ch3 = "https://t.me/+spxy0njzur9hNTI1"
 ch4 = "https://t.me/+1_Yj8PXYUhc1MDE1"
 
-# -------- CHANNEL CHECK (ONLY 3 CHECK) --------
+# ===== CHANNEL IDS (ALL 4 CHECK) =====
 channels = [
     -1003803906100,
     -1003838757488,
-    -1003835376484
+    -1003835376484,
+    -100xxxxxxxxxx   # ⚠️ yaha 4th channel ka ID daal
 ]
 
-# -------- JOIN CHECK --------
+# ===== JOIN CHECK =====
 def check_join(user_id):
     try:
         for ch in channels:
@@ -35,33 +32,32 @@ def check_join(user_id):
     except:
         return False
 
-# -------- BUTTONS --------
+# ===== BUTTONS =====
 def join_buttons():
     markup = InlineKeyboardMarkup(row_width=1)
-    
+
     markup.add(
-        InlineKeyboardButton("📢 Channel 1", url=ch1),
-        InlineKeyboardButton("📢 Channel 2", url=ch2),
-        InlineKeyboardButton("📢 Channel 3", url=ch3),
-        InlineKeyboardButton("📢 Channel 4", url=ch4),
-        InlineKeyboardButton("✅ Continue", callback_data="check")
+        InlineKeyboardButton("📢 Join Channel 1", url=ch1),
+        InlineKeyboardButton("📢 Join Channel 2", url=ch2),
+        InlineKeyboardButton("📢 Join Channel 3", url=ch3),
+        InlineKeyboardButton("📢 Join Channel 4", url=ch4),
+        InlineKeyboardButton("✅ I Joined", callback_data="check")
     )
-    
     return markup
 
-# -------- START --------
+# ===== START COMMAND =====
 @bot.message_handler(commands=['start'])
 def start(message):
     if not check_join(message.from_user.id):
         bot.send_message(
             message.chat.id,
-            "⚠️ Join all channels first",
+            "⚠️ पहले सभी चैनल join करो फिर Continue दबाओ",
             reply_markup=join_buttons()
         )
     else:
         bot.send_message(message.chat.id, "✅ Welcome Bro 🔥 Bot Working")
 
-# -------- CALLBACK --------
+# ===== CALLBACK =====
 @bot.callback_query_handler(func=lambda call: True)
 def callback(call):
     if call.data == "check":
@@ -72,9 +68,9 @@ def callback(call):
                 call.message.message_id
             )
         else:
-            bot.answer_callback_query(call.id, "❌ Join all channels first")
+            bot.answer_callback_query(call.id, "❌ सभी चैनल join करो")
 
-# -------- KEEP ALIVE (RENDER) --------
+# ===== KEEP ALIVE (RENDER) =====
 app = Flask(__name__)
 
 @app.route('/')
@@ -84,8 +80,7 @@ def home():
 def run():
     app.run(host='0.0.0.0', port=8080)
 
-# -------- START BOT --------
-import threading
+# ===== RUN =====
 threading.Thread(target=run).start()
 
 print("Bot Started 🔥")
