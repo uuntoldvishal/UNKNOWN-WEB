@@ -190,5 +190,3 @@ bot.infinity_polling(timeout=60, long_polling_timeout=30)
 except Exception as e:
 print("Error:", e)
 time.sleep(5)
-
-Ye pura code he tum kr ke dedo sb thik me copy paste kruna
