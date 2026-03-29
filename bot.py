@@ -15,7 +15,7 @@ STORAGE
 
 buttons_data = {}
 
-CHANNEL LINKS
+#CHANNEL LINKS
 
 ch1 = "https://t.me/+Ws43qQ4tWZQwOGE1"
 ch2 = "https://t.me/+XNLWdHJ7n9kzOGQ1"
