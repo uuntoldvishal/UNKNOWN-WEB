@@ -21,8 +21,7 @@ ch4 = "https://t.me/+l_Yj8PXYUhc1MDE1"
 channels = [
     -1003803906100,
     -1003838757488,
-    -1003835376484,
-    -100xxxxxxxxxx   # 4th channel ID yaha dal
+    -1003835376484
 ]
 
 # JOIN CHECK
