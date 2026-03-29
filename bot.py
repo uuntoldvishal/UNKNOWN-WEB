@@ -55,9 +55,14 @@ def main_menu():
             markup.add(name)
     return markup
 
-# START
+# START (UPDATED)
 @bot.message_handler(commands=['start'])
 def start(message):
+    bot.send_message(
+        message.chat.id,
+        "WELCOME TO BOT\n\nDEVELOPER: VISHAL\n\nPLEASE JOIN ALL CHANNELS TO CONTINUE"
+    )
+    time.sleep(1)
     bot.send_message(message.chat.id, "Join all channels first", reply_markup=join_buttons())
 
 # CHECK JOIN
@@ -108,6 +113,19 @@ def add_btn(message):
 
 def save_btn(message):
     name = message.text.strip()
+
+    if "/" in name:
+        bot.send_message(message.chat.id, "Invalid name")
+        return
+
+    if not name:
+        bot.send_message(message.chat.id, "Invalid name")
+        return
+
+    if name in buttons_data:
+        bot.send_message(message.chat.id, "Button already exists")
+        return
+
     buttons_data[name] = []
     bot.send_message(message.chat.id, f"Button '{name}' created")
     bot.send_message(message.chat.id, "Updated Menu", reply_markup=main_menu())
@@ -124,7 +142,7 @@ def delete_btn(message):
 
     if name in buttons_data:
         del buttons_data[name]
-        bot.send_message(message.chat.id, f"Button '{name}' deleted")
+        bot.send_message(message.chat.id, f"Deleted '{name}'")
         bot.send_message(message.chat.id, "Updated Menu", reply_markup=main_menu())
     else:
         bot.send_message(message.chat.id, "Button not found")
@@ -150,16 +168,12 @@ def save_item(message, name):
     try:
         if message.content_type == 'document':
             buttons_data[name].append(message.document.file_id)
-
         elif message.content_type == 'video':
             buttons_data[name].append(message.video.file_id)
-
         elif message.content_type == 'audio':
             buttons_data[name].append(message.audio.file_id)
-
         elif message.content_type == 'text':
             buttons_data[name].append(message.text)
-
         else:
             bot.send_message(message.chat.id, "Unsupported type")
             return
