@@ -112,6 +112,23 @@ def save_btn(message):
     bot.send_message(message.chat.id, f"Button '{name}' created")
     bot.send_message(message.chat.id, "Updated Menu", reply_markup=main_menu())
 
+# DELETE BUTTON
+@bot.message_handler(commands=['delbtn'])
+def del_btn(message):
+    if message.from_user.id == ADMIN_ID:
+        msg = bot.send_message(message.chat.id, "Send button name to delete:")
+        bot.register_next_step_handler(msg, delete_btn)
+
+def delete_btn(message):
+    name = message.text.strip()
+
+    if name in buttons_data:
+        del buttons_data[name]
+        bot.send_message(message.chat.id, f"Button '{name}' deleted")
+        bot.send_message(message.chat.id, "Updated Menu", reply_markup=main_menu())
+    else:
+        bot.send_message(message.chat.id, "Button not found")
+
 # ADD ITEM
 @bot.message_handler(commands=['additem'])
 def add_item(message):
