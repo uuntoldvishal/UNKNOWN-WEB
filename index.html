@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ELITE PRO </title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;900&family=Rajdhani:wght@500;600;700&display=swap');
+        
+        :root { --bg-main: #020617; --bg-card: #0f172a; --gold: #eab308; --blue: #0ea5e9; --neon-green: #22c55e; --red-warn: #ef4444; }
+        
+        body { font-family: 'Rajdhani', sans-serif; background-color: var(--bg-main); color: #f8fafc; padding-bottom: 100px; padding-top: 75px; overflow-x: hidden; transition: 0.3s; }
+        .font-orbitron { font-family: 'Orbitron', sans-serif; }
+        .premium-logo { font-family: 'Orbitron'; font-weight: 900; font-style: italic; background: linear-gradient(to right, #fff, var(--gold)); -webkit-background-clip: text; color: transparent; letter-spacing: 1px; }
+        .glass { background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(234, 179, 8, 0.2); position: fixed; top: 0; left: 0; right: 0; z-index: 4000; box-shadow: 0 4px 30px rgba(0,0,0,0.5); }
+        
+        /* MATCH CARD UI */
+        .gamer-card { background: var(--bg-card); border-radius: 15px; border: 1px solid #1e293b; margin-bottom: 15px; overflow: hidden; position: relative; box-shadow: 0 10px 35px rgba(0,0,0,0.5); }
+        .match-thumb { width: 100%; height: 210px; object-fit: fill; background: #000; border-bottom: 1px solid #1e293b; }
+        
+        /* SILVER SHINE FOR ALL CARDS */
+        .details-area { position: relative; overflow: hidden; padding: 15px; background: var(--bg-card); }
+        .details-area::after {
+            content: ""; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+            transform: skewX(-20deg); animation: silver-shine 5s infinite;
+        }
+        @keyframes silver-shine { 0% { left: -100%; } 40% { left: 150%; } 100% { left: 150%; } }
+
+        /* MULTI-COLOR SUPER MATCH ORBIT & LIGHTNING */
+        .super-match-border { position: relative; padding: 2.5px; background: #000; border-radius: 14px; overflow: hidden; margin-bottom: 25px; }
+        .super-match-border::before {
+            content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: conic-gradient(red, var(--gold), var(--blue), #000, red);
+            animation: rotate-border 4s linear infinite;
+        }
+        @keyframes rotate-border { 100% { transform: rotate(360deg); } }
+        .super-card-inner { background: var(--bg-card); border-radius: 12px; position: relative; z-index: 1; overflow: hidden; }
+        
+        /* BIJLI EFFECT EVERY 2 SECONDS */
+        .thunder-flash .super-card-inner { animation: bijli-strike 2s infinite; }
+        @keyframes bijli-strike {
+            0%, 91%, 100% { filter: brightness(1); }
+            93% { filter: brightness(3) contrast(1.2); box-shadow: inset 0 0 30px rgba(255,255,255,0.9); }
+            95% { filter: brightness(1); box-shadow: none; }
+            97% { filter: brightness(2.5) contrast(1.5); box-shadow: inset 0 0 40px rgba(14, 165, 233, 0.9); }
+        }
+
+        .super-tag { position: absolute; top: 12px; right: -35px; background: var(--gold); color: #000; font-size: 8px; font-weight: 900; padding: 4px 40px; transform: rotate(45deg); z-index: 10; font-family: 'Orbitron'; box-shadow: 0 0 10px var(--gold); }
+
+        /* PREMIUM NEON ROOM BOX */
+        .room-info-premium { background: linear-gradient(145deg, #064e3b, #022c22); border: 2px solid var(--neon-green); border-radius: 12px; padding: 15px; margin-top: 10px; text-align: center; box-shadow: 0 0 20px rgba(34, 197, 94, 0.4); position: relative; overflow: hidden; }
+        .room-info-premium::after { content: ""; position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent); transform: skewX(-20deg); animation: room-shine 3s infinite; }
+        @keyframes room-shine { 0% { left: -100%; } 100% { left: 200%; } }
+        .room-text { font-family: 'Orbitron'; font-size: 18px; font-weight: 900; color: #fff; letter-spacing: 1.5px; }
+
+        /* PREMIUM WIN REDEEM CARD */
+        .redeem-pro-card { background: linear-gradient(145deg, #0f172a, #020617); border: 2px solid var(--blue); border-radius: 25px; padding: 40px 20px; position: relative; overflow: hidden; box-shadow: 0 0 30px rgba(14, 165, 233, 0.3); }
+        .redeem-pro-card::after { content: ""; position: absolute; top: 0; left: -100%; width: 55%; height: 100%; background: linear-gradient(90deg, transparent, rgba(14, 165, 233, 0.2), transparent); transform: skewX(-25deg); animation: blue-move 4s infinite; }
+        @keyframes blue-move { 0% { left: -100%; } 30% { left: 150%; } 100% { left: 150%; } }
+
+        /* BOMB TO WHITE FLASH SPLASH */
+        #splash { position: fixed; inset: 0; background: #020617; z-index: 20000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .bomb-ani { font-size: 80px; animation: explode-bomb 2.5s forwards ease-in; }
+        @keyframes explode-bomb { 0% { transform: scale(1); } 50% { transform: scale(1.4) rotate(15deg); } 90% { transform: scale(40); opacity: 1; } 100% { transform: scale(80); opacity: 0; } }
+        #white-flash { position: fixed; inset: 0; background: #fff; z-index: 21000; display: none; }
+        .splash-char-box { filter: drop-shadow(0 0 40px var(--gold)); margin-bottom: 20px; }
+
+        /* 👑 PREMIUM BOTTOM NAV & RED RULES ALERT 👑 */
+        nav { height: 75px; bottom: 0; left: 0; right: 0; z-index: 5000; position: fixed; display: flex; justify-content: space-around; align-items: center; background: rgba(15, 23, 42, 0.98); backdrop-filter: blur(20px); border-top: 1px solid rgba(234, 179, 8, 0.15); box-shadow: 0 -5px 25px rgba(0,0,0,0.6); }
+        .nav-btn { display: flex; flex-direction: column; align-items: center; gap: 4px; color: #64748b; background: none; border: none; cursor: pointer; width: 20%; transition: 0.3s ease; position: relative; }
+        .nav-btn i { font-size: 22px; transition: 0.3s ease; }
+        .nav-btn span { font-size: 9px; font-weight: 900; text-transform: uppercase; transition: 0.3s ease; }
+        .active-nav { color: var(--gold) !important; filter: drop-shadow(0 0 12px var(--gold)); transform: translateY(-4px); }
+        
+        /* 🚨 RED LIGHTNING EFFECT FOR RULES 🚨 */
+        .nav-rules-alert { animation: red-alert-flash 2s infinite; color: var(--red-warn); }
+        @keyframes red-alert-flash {
+            0%, 91%, 100% { filter: drop-shadow(0 0 2px var(--red-warn)); transform: scale(1); }
+            93% { filter: drop-shadow(0 0 20px red) brightness(2); transform: scale(1.15); color: #ff4d4d; }
+            95% { filter: drop-shadow(0 0 2px var(--red-warn)); transform: scale(1); }
+            97% { filter: drop-shadow(0 0 25px red) brightness(2.5); transform: scale(1.2); color: #fff; }
+        }
+        .rules-text-glow { color: var(--red-warn); font-weight: 900; text-shadow: 0 0 10px rgba(239, 68, 68, 0.5); }
+
+        /* 👑 PREMIUM PROFILE SECTION CSS 👑 */
+        .profile-card-premium { background: linear-gradient(145deg, #0f172a, #020617); border: 1px solid rgba(234, 179, 8, 0.2); box-shadow: 0 0 40px rgba(0,0,0,0.8), inset 0 0 20px rgba(234, 179, 8, 0.05); position: relative; overflow: hidden; }
+        .spin-border { position: absolute; inset: 0; border-radius: 50%; padding: 3px; background: linear-gradient(to right, var(--gold), var(--blue), var(--gold)); -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; animation: spin-slow 4s linear infinite; }
+        @keyframes spin-slow { 100% { transform: rotate(360deg); } }
+        .text-gold-gradient { background: linear-gradient(to right, #fff, var(--gold), #facc15); -webkit-background-clip: text; color: transparent; }
+
+        .pay-box-sq { background: #1e293b; border: 1.5px solid #334155; border-radius: 12px; padding: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; }
+        .p-icon-img { width: 35px; height: 35px; object-fit: contain; }
+
+        .cinematic-rules { background: #000; border: 2px solid var(--red-warn); border-radius: 20px; padding: 25px; position: relative; overflow: hidden; box-shadow: 0 0 30px rgba(239, 68, 68, 0.3); }
+        .cinematic-rules::after { content: ""; position: absolute; top: -10%; left: 0; width: 100%; height: 50px; background: linear-gradient(to bottom, transparent, var(--red-warn), transparent); opacity: 0.3; animation: scan-rules 4s linear infinite; }
+        @keyframes scan-rules { 0% { top: -10%; } 100% { top: 110%; } }
+        .rule-line { display: flex; gap: 12px; margin-bottom: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding-bottom: 8px; position: relative; z-index: 2; }
+        .rule-line i { color: var(--red-warn); margin-top: 4px; }
+        .rule-line span { font-size: 14px; font-weight: 600; color: #fca555; }
+
+        input { background: #1e293b !important; border: 1px solid #334155 !important; border-radius: 10px !important; padding: 15px !important; width: 100%; color: #fff !important; outline: none; font-size: 16px; font-weight: 700; }
+        .btn-gold { background: linear-gradient(45deg, #facc15, #eab308); color: #000; font-weight: 900; }
+        .btn-blue { background: linear-gradient(45deg, #0ea5e9, #0284c7); color: #fff; font-weight: 900; }
+        .modal-fixed { position: fixed; inset: 0; background: rgba(0,0,0,0.96); display: none; align-items: center; justify-content: center; z-index: 10000; padding: 20px; backdrop-filter: blur(15px); }
+        .timer-box { font-family: 'Orbitron'; font-size: 11px; font-weight: 900; color: var(--gold); }
+        ::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body>
+
+    <div id="splash">
+        <div id="bomb" class="bomb-ani">💣</div>
+        <div id="splash-hero" class="splash-char-box hidden" style="font-size:120px; line-height:1; text-align:center;">👑</div>
+        <div class="mt-10 text-center">
+            <h1 class="text-3xl font-black font-orbitron text-white tracking-[0.3em] italic uppercase">ELITE PRO</h1>
+            <p class="text-[10px] tracking-[0.8em] text-slate-500 uppercase mt-4">VISHAL</p>
+        </div>
+    </div>
+    <div id="white-flash"></div>
+
+    <div id="auth-screen" class="hidden fixed inset-0 bg-[#020617] z-[15000] flex flex-col items-center justify-center p-6 backdrop-blur-md">
+        <div class="w-full max-w-sm bg-[#0f172a] p-8 rounded-[2.5rem] border border-[#1e293b] shadow-[0_0_40px_rgba(14,165,233,0.15)] relative overflow-hidden">
+            <h1 class="text-4xl font-black font-orbitron text-center mb-8 italic uppercase tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-white to-yellow-500">Elite Pro</h1>
+            <div id="login-form" class="space-y-4">
+                <input type="email" id="login-email" placeholder="Email Address">
+                <input type="password" id="login-pass" placeholder="Password">
+                <button onclick="handleLogin()" class="w-full py-4 btn-blue rounded-2xl font-black uppercase tracking-widest mt-2 shadow-lg">Login</button>
+                <p class="text-center text-xs text-slate-400 mt-4 font-bold uppercase cursor-pointer hover:text-white transition" onclick="toggleAuth(false)">New Player? Create Account</p>
+            </div>
+            <div id="signup-form" class="space-y-4 hidden">
+                <input type="text" id="signup-user" placeholder="Gamer IGN">
+                <input type="email" id="signup-email" placeholder="Email Address">
+                <input type="password" id="signup-pass" placeholder="Password (Min 6)">
+                <input type="text" id="signup-invite" placeholder="Invite Code (Optional)">
+                <button onclick="handleSignup()" class="w-full py-4 btn-gold rounded-2xl font-black uppercase tracking-widest mt-2 shadow-lg text-black">Sign Up</button>
+                <p class="text-center text-xs text-slate-400 mt-4 font-bold uppercase cursor-pointer hover:text-white transition" onclick="toggleAuth(true)">Already a Pro? Login</p>
+            </div>
+        </div>
+    </div>
+
+    <header class="glass px-4 py-4 flex justify-between items-center text-white">
+        <h2 class="premium-logo text-xl uppercase italic">ELITE PRO</h2>
+        <div onclick="showSec('wallet')" class="bg-yellow-900/30 px-5 py-2.5 rounded-xl border border-yellow-700/50 flex items-center gap-2 cursor-pointer shadow-lg active:scale-95 transition-all">
+            <i class="fas fa-coins text-yellow-500"></i>
+            <span id="header-wallet" class="font-black text-sm font-orbitron text-white tracking-widest">₹0</span>
+        </div>
+    </header>
+
+    <main class="px-4 max-w-lg mx-auto pt-2">
+        <section id="sec-home" class="main-sec">
+            <div id="super-match-container"></div>
+            <div id="tournament-list" class="space-y-1"></div>
+        </section>
+        
+        <section id="sec-redeem" class="main-sec hidden text-center space-y-6">
+            <div class="redeem-pro-card">
+                <i class="fas fa-gift text-6xl text-blue-500 mb-6 drop-shadow-lg"></i>
+                <h2 class="text-2xl font-black font-orbitron mb-6 text-white uppercase italic">Win Code Redeem</h2>
+                <input type="text" id="redeem-input" placeholder="ENTER SECURE CODE" class="text-center font-black tracking-[0.3em] uppercase mb-8">
+                <button onclick="claimPrize()" class="w-full py-5 btn-blue rounded-2xl font-black uppercase shadow-xl text-lg italic">Claim Now</button>
+            </div>
+        </section>
+
+        <section id="sec-rules" class="main-sec hidden">
+            <div class="cinematic-rules">
+                <div class="text-center mb-8">
+                    <i class="fas fa-biohazard text-6xl text-red-600 mb-2 animate-pulse"></i>
+                    <h1 class="font-black text-white font-orbitron text-3xl italic tracking-tighter uppercase">⚠️ WARNING</h1>
+                    <p class="text-[9px] text-red-500 uppercase tracking-widest mt-1 font-black">Hack Detection = Permanent Block</p>
+                </div>
+                <div id="display-rules"></div>
+            </div>
+        </section>
+
+        <section id="sec-wallet" class="main-sec hidden space-y-6 text-center">
+            <div class="bg-gradient-to-br from-slate-900 to-black p-10 rounded-[3.5rem] text-white shadow-2xl relative border border-slate-800 overflow-hidden">
+                <p class="text-[10px] uppercase font-black text-slate-400 mb-1">Total Assets (Combined)</p>
+                <h1 class="text-6xl font-black font-orbitron mb-4" id="wallet-balance">₹0</h1>
+                
+                <div class="winning-box-premium">
+                    <p class="text-[10px] text-emerald-400 font-black uppercase tracking-wider mb-1">Winning Balance (Withdrawable)</p>
+                    <p class="text-3xl font-black font-orbitron text-white" id="winning-balance">₹0</p>
+                </div>
+
+                <div class="grid grid-cols-3 gap-2 mt-10">
+                    <button onclick="openModal('modal-add')" class="py-3 bg-white text-black rounded-xl font-black text-[10px] uppercase shadow-lg">Deposit</button>
+                    <button onclick="openModal('modal-withdraw')" class="py-3 btn-gold rounded-xl font-black text-[10px] uppercase shadow-lg">Withdraw</button>
+                    <button onclick="openModal('modal-playcode')" class="py-3 btn-blue rounded-xl font-black text-[10px] uppercase shadow-lg">Redeem</button>
+                </div>
+            </div>
+            
+            <div class="bg-blue-900/10 border border-blue-900/30 p-8 rounded-[3rem]">
+                <h3 class="font-black text-blue-400 uppercase text-[12px] mb-2 flex items-center justify-center gap-2 font-orbitron italic"><i class="fas fa-share-alt"></i> REFER & EARN 10%</h3>
+                <p class="text-[10px] font-bold text-slate-400 mb-6 uppercase text-center italic">Friend ke Deposit par turant 10% bonus payen!</p>
+                <div class="flex items-center gap-3 bg-slate-950 p-4 rounded-2xl border border-blue-800/50">
+                    <span id="my-invite-code" class="flex-1 font-black text-center text-2xl tracking-[0.4em] font-orbitron text-white uppercase italic">...</span>
+                    <button onclick="copyInvite()" class="bg-blue-600 text-white w-14 h-14 rounded-2xl active:scale-90 shadow-lg"><i class="fas fa-copy text-xl"></i></button>
+                </div>
+                <div class="grid grid-cols-2 gap-4 mt-6">
+                    <div class="bg-slate-900 p-4 rounded-2xl border border-white/5 shadow-inner"><p class="text-[10px] opacity-50 uppercase font-black text-slate-500">Invites</p><p id="invite-count" class="text-2xl font-black text-white">0</p></div>
+                    <div class="bg-slate-900 p-4 rounded-2xl border border-white/5 shadow-inner"><p class="text-[10px] opacity-50 uppercase font-black text-slate-500">Earned</p><p id="invite-earned" class="text-xl font-black text-emerald-500 font-orbitron">₹0</p></div>
+                </div>
+            </div>
+            <div id="txn-history" class="space-y-3 pb-10 text-left px-2"></div>
+        </section>
+
+        <!-- 👑 PREMIUM PROFILE SECTION 👑 -->
+        <section id="sec-profile" class="main-sec hidden text-center">
+            <div class="profile-card-premium p-10 rounded-[3.5rem] mt-2 mb-8 mx-1">
+                
+                <!-- Animated Avatar Ring -->
+                <div class="relative w-28 h-28 mx-auto mb-6">
+                    <div class="spin-border"></div>
+                    <div class="w-full h-full bg-slate-900 rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(234,179,8,0.3)] text-yellow-500 text-5xl">
+                        <i class="fas fa-user-ninja"></i>
+                    </div>
+                </div>
+                
+                <div onclick="editProfileName()" class="cursor-pointer">
+                    <!-- Glowing Name -->
+                    <h2 id="profile-name" class="text-4xl font-black uppercase font-orbitron text-gold-gradient drop-shadow-lg tracking-wider">...</h2>
+                    
+                    <!-- Dark Premium Badge for Email -->
+                    <p id="profile-email" class="text-[10px] font-bold text-sky-400 uppercase tracking-[0.2em] mt-3 bg-slate-950 inline-block px-5 py-1.5 rounded-full border border-sky-900/50 shadow-inner">...</p>
+                    
+                    <div class="mt-6 inline-flex items-center gap-2 bg-gradient-to-r from-slate-800 to-slate-900 px-6 py-2.5 rounded-full border border-white/10 text-yellow-500 text-xs font-black uppercase shadow-lg active:scale-95 transition"><i class="fas fa-user-edit"></i> Edit Gamer Profile</div>
+                </div>
+                
+                <div class="space-y-4 mt-12 text-left">
+                    <!-- Premium Action Buttons -->
+                    <button onclick="openModal('modal-recovery')" class="w-full py-5 bg-gradient-to-r from-purple-900/30 to-slate-900 text-purple-300 rounded-2xl font-black uppercase text-[11px] tracking-widest flex justify-between px-8 border border-purple-500/30 shadow-[0_0_20px_rgba(168,85,247,0.15)] active:scale-95 transition">Account Recovery <i class="fas fa-fingerprint text-lg text-purple-400"></i></button>
+                    <button onclick="window.open(settings.helpLink || '#')" class="w-full py-5 bg-gradient-to-r from-slate-800 to-slate-900 text-white rounded-2xl font-black uppercase text-[11px] tracking-widest flex justify-between px-8 border border-white/10 shadow-lg active:scale-95 transition">Support help <i class="fas fa-headset text-blue-400 text-lg"></i></button>
+                    <button onclick="handleLogout()" class="w-full py-4 bg-red-950/40 text-red-500 rounded-2xl font-black text-xs mt-8 shadow-inner border border-red-900/50 uppercase tracking-[0.3em] italic text-center active:scale-95 transition">Sign Out</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 🚨 PREMIUM BOTTOM NAV WITH RED RULES ALERT 🚨 -->
+    <nav>
+        <button onclick="showSec('home')" id="nav-home" class="nav-btn active-nav"><i class="fas fa-gamepad"></i><span>Arena</span></button>
+        <button onclick="showSec('redeem')" id="nav-redeem" class="nav-btn"><i class="fas fa-gift"></i><span>Win</span></button>
+        
+        <!-- RED LIGHTNING RULES BUTTON -->
+        <button onclick="showSec('rules')" id="nav-rules" class="nav-btn">
+            <i class="fas fa-file-contract nav-rules-alert"></i>
+            <span class="rules-text-glow mt-[2px]">Rules</span>
+        </button>
+        
+        <button onclick="showSec('wallet')" id="nav-wallet" class="nav-btn"><i class="fas fa-wallet"></i><span>Assets</span></button>
+        <button onclick="showSec('profile')" id="nav-profile" class="nav-btn"><i class="fas fa-user-circle"></i><span>User</span></button>
+    </nav>
+
+    <!-- Modals -->
+    <div id="modal-add" class="modal-fixed">
+        <div class="bg-slate-900 w-full max-w-sm p-10 rounded-[3.5rem] text-center border border-slate-800 overflow-y-auto max-h-[95vh] shadow-3xl">
+            <h3 class="font-black text-3xl uppercase font-orbitron mb-8 text-emerald-500 italic">Deposit</h3>
+            <div id="qr-box" class="hidden flex flex-col items-center bg-white p-2 rounded-2xl mb-8 border-4 border-slate-950 shadow-2xl" style="width:210px;height:210px;margin:0 auto;"><img id="qr-img" src="" class="w-full h-full object-contain"></div>
+            <input type="number" id="add-amount" placeholder="Amount (Min ₹10)" class="mb-8 text-center text-3xl font-black text-white">
+            <div class="grid grid-cols-3 gap-3 mb-8">
+                <button onclick="payViaApp('phonepe')" class="pay-box-sq active:scale-90 transition-all border border-purple-500/20"><img src="https://img.icons8.com/color/48/phonepe.png" class="p-icon-img"><span class="text-[7px] font-black text-white uppercase mt-1">PhonePe</span></button>
+                <button onclick="payViaApp('gpay')" class="pay-box-sq active:scale-90 transition-all border border-blue-500/20"><img src="https://img.icons8.com/color/48/google-pay.png" class="p-icon-img"><span class="text-[7px] font-black text-white uppercase mt-1">GPay</span></button>
+                <button onclick="payViaApp('paytm')" class="pay-box-sq active:scale-90 transition-all border border-sky-500/20"><img src="https://img.icons8.com/color/48/paytm.png" class="p-icon-img"><span class="text-[7px] font-black text-white uppercase mt-1">Paytm</span></button>
+            </div>
+            <p class="text-[11px] text-slate-400 mb-6 uppercase italic font-bold">UPI ID: <span id="display-upi" class="text-white select-all font-orbitron">...</span></p>
+            <input type="number" id="txn-id" oninput="this.value=this.value.replace(/[^0-9]/g,'');" placeholder="12-Digit UTR Number Only" maxlength="12" class="mb-8 text-center tracking-[0.2em] font-black text-white py-5">
+            <button onclick="submitAddMoney()" class="w-full py-5 btn-blue rounded-3xl font-black uppercase shadow-2xl text-lg italic tracking-widest">Verify Assets</button>
+            <button onclick="closeModal('modal-add')" class="mt-8 text-xs font-bold uppercase text-slate-500 tracking-widest">Back</button>
+        </div>
+    </div>
+
+    <div id="modal-playcode" class="modal-fixed"><div class="bg-slate-900 w-full max-w-sm p-10 rounded-[4rem] text-center border border-sky-900 shadow-3xl text-white"><h3 class="font-black text-2xl uppercase font-orbitron mb-4 text-sky-400">Play Code Request</h3><input type="number" id="playcode-amt" placeholder="Amount (₹)" class="mb-10 text-center text-3xl font-black text-white bg-slate-800 rounded-2xl"><button onclick="requestRedeemCode()" class="w-full py-5 btn-blue rounded-3xl font-black shadow-lg text-lg">Submit</button><button onclick="closeModal('modal-playcode')" class="mt-6 text-xs font-bold text-slate-500 uppercase">Cancel</button></div></div>
+    <div id="modal-withdraw" class="modal-fixed"><div class="bg-slate-900 w-full max-w-sm p-10 rounded-[4rem] text-center border border-slate-800 shadow-3xl text-white"><h3 class="font-black text-2xl uppercase font-orbitron mb-2 text-yellow-600">Withdrawal</h3><p class="text-[10px] text-slate-500 mb-10 font-bold uppercase italic">Winning Only (₹50-2000)</p><input type="number" id="withdraw-amount" placeholder="Amount (₹)" class="mb-4 text-center text-white text-3xl font-black"><input type="text" id="withdraw-upi" placeholder="Receiving UPI ID" class="mb-10 text-center font-bold text-white"><button onclick="submitWithdraw()" class="w-full py-5 btn-gold rounded-3xl font-black shadow-lg text-lg uppercase italic">Confirm</button><button onclick="closeModal('modal-withdraw')" class="mt-6 text-xs font-bold uppercase text-slate-500">Abort</button></div></div>
+    <div id="modal-team" class="modal-fixed"><div class="bg-slate-900 w-full max-w-xs p-10 rounded-[3rem] shadow-3xl border border-slate-800 text-white italic"><h3 id="modal-team-title" class="text-center font-black uppercase font-orbitron mb-10 text-sky-500 text-2xl">Entry</h3><div id="team-inputs" class="space-y-4"></div><button onclick="confirmTeamJoin()" class="w-full py-5 btn-blue rounded-2xl font-black mt-10 uppercase italic shadow-lg">Confirm</button><button onclick="closeModal('modal-team')" class="w-full mt-6 text-xs font-bold text-slate-500 uppercase text-center">Back</button></div></div>
+
+    <!-- Recovery Modal -->
+    <div id="modal-recovery" class="modal-fixed"><div class="bg-slate-900 w-full max-w-sm p-10 rounded-[3.5rem] text-center border border-purple-900 shadow-3xl text-white"><h3 class="font-black text-2xl uppercase font-orbitron mb-4 text-purple-400">Account Recovery</h3><input type="email" id="old-email" placeholder="Enter Old Email" class="mb-8 text-center text-white bg-slate-800 rounded-2xl p-4 w-full"><button onclick="submitRecovery()" class="w-full py-5 btn-blue rounded-3xl font-black shadow-lg text-lg uppercase italic tracking-widest">Submit Ticket</button><button onclick="closeModal('modal-recovery')" class="mt-6 text-xs font-bold text-slate-500 uppercase tracking-widest">Back</button></div></div>
+
+    <div id="banned-screen" class="hidden fixed inset-0 z-[25000] bg-black flex flex-col items-center justify-center p-6 text-center text-white italic">
+        <i class="fas fa-lock text-9xl text-red-600 mb-10 animate-pulse"></i>
+        <h1 class="text-4xl font-black font-orbitron mb-4 uppercase italic">ID Blocked</h1>
+        <div class="bg-gray-900 p-10 rounded-[3rem] border border-gray-800 shadow-2xl"><p class="text-[11px] text-gray-500 uppercase mb-4 tracking-[0.3em]">Unlocked In</p><div id="ban-timer-display" class="text-4xl font-black text-yellow-500 font-orbitron">--:--:--</div></div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBuW2zoDuxjUnTazi8kcJrLjC-UUTD2jNY",
+            authDomain: "vishal-turnament.firebaseapp.com",
+            databaseURL: "https://vishal-turnament-default-rtdb.firebaseio.com",
+            projectId: "vishal-turnament",
+            storageBucket: "vishal-turnament.firebasestorage.app"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth(); const db = firebase.database();
+        let currentUser = null, userData = null, settings = {}, activeMatch = null, activeIntervals = {};
+
+        setTimeout(() => {
+            const flash = document.getElementById('white-flash'); const splash = document.getElementById('splash');
+            const bomb = document.getElementById('bomb'); const hero = document.getElementById('splash-hero');
+            bomb.style.transform = "scale(100)"; bomb.style.opacity = "0"; flash.style.display = 'block';
+            setTimeout(() => {
+                flash.style.opacity = '0'; flash.style.transition = 'opacity 0.8s'; bomb.style.display = 'none'; hero.classList.remove('hidden'); 
+                setTimeout(() => { splash.style.display = 'none'; flash.style.display = 'none'; }, 1500); 
+            }, 1000);
+        }, 2200);
+
+        auth.onAuthStateChanged(user => {
+            if(user) { currentUser = user; initApp(); document.getElementById('auth-screen').classList.add('hidden'); } 
+            else { document.getElementById('auth-screen').classList.remove('hidden'); hideSplash(); }
+        });
+
+        function hideSplash() { const sp = document.getElementById('splash'); if(sp) { sp.style.opacity = '0'; setTimeout(() => sp.style.display = 'none', 600); } }
+
+        function initApp() {
+            db.ref('users/' + currentUser.uid).on('value', snap => {
+                userData = snap.val(); if(!userData) return;
+                const totalBalance = (Number(userData.wallet) || 0) + (Number(userData.winningBalance) || 0);
+                document.getElementById('header-wallet').innerText = "₹" + totalBalance;
+                document.getElementById('wallet-balance').innerText = "₹" + totalBalance;
+                document.getElementById('winning-balance').innerText = "₹" + (userData.winningBalance || 0);
+                document.getElementById('profile-name').innerText = userData.username;
+                document.getElementById('profile-email').innerText = userData.email;
+                document.getElementById('my-invite-code').innerText = userData.referralCode || "...";
+                document.getElementById('invite-count').innerText = userData.inviteCount || 0;
+                document.getElementById('invite-earned').innerText = "₹" + (userData.inviteEarned || 0);
+                renderHistory(userData.transactions);
+                hideSplash();
+            });
+
+            db.ref('settings').on('value', s => { 
+                settings = s.val() || {}; 
+                if(settings.adminUpi) document.getElementById('display-upi').innerText = settings.adminUpi;
+                if(settings.qrCodeUrl) { document.getElementById('qr-img').src = settings.qrCodeUrl; document.getElementById('qr-box').classList.remove('hidden'); }
+                if(settings.rules) {
+                    const rArr = settings.rules.split('\n'); let rHtml = '';
+                    rArr.forEach(line => { if(line.trim() !== "") rHtml += `<div class="rule-line"><i class="fas fa-shield-alt"></i><span>${line}</span></div>`; });
+                    document.getElementById('display-rules').innerHTML = rHtml;
+                }
+            });
+            loadTournaments();
+        }
+
+        function loadTournaments() {
+            db.ref('tournaments').orderByChild('index').on('value', snap => {
+                const nl = document.getElementById('tournament-list'); const sl = document.getElementById('super-match-container');
+                nl.innerHTML = ''; sl.innerHTML = '';
+                Object.values(activeIntervals).forEach(i => clearInterval(i)); activeIntervals = {};
+                let matchesArr =[];
+                snap.forEach(child => { matchesArr.push({key: child.key, ...child.val()}) });
+                const sortOrder = { 'Live': 1, 'Upcoming': 2, 'Completed': 3, 'Canceled': 4 };
+                matchesArr.sort((a, b) => (sortOrder[a.status] || 5) - (sortOrder[b.status] || 5));
+                matchesArr.forEach(t => {
+                    const pc = t.participants ? Object.keys(t.participants).length : 0;
+                    const isJ = t.participants && t.participants[currentUser.uid];
+                    const isF = pc >= t.max_players;
+                    const timerID = `timer-${t.key}`;
+                    let btnHTML = '';
+                    
+                    if (t.status === 'Canceled' || t.status === 'Cancelled') {
+                        btnHTML = `<div class="w-full mt-2 py-2.5 bg-red-950/30 border border-red-900/50 text-red-500 rounded-xl text-center font-black uppercase text-[10px] tracking-widest shadow-inner">MATCH CANCELED</div>`;
+                    } else if(t.status === 'Live') {
+                        if(isJ) btnHTML = `<div class="room-info-premium text-center"><div class="room-text font-black uppercase">ID: ${t.room_id || 'Wait'} | PASS: ${t.room_pass || 'Wait'}</div></div>`;
+                        else btnHTML = `<div class="w-full mt-2 py-3 bg-red-950/20 text-red-500 rounded-xl text-center font-black uppercase text-[10px]">Entry Closed</div>`;
+                    } else if (isJ && t.status !== 'Completed') {
+                        btnHTML = `<div class="w-full mt-2 py-2.5 bg-emerald-950/40 text-emerald-500 rounded-xl text-center font-black uppercase text-[10px]">Joined ✓</div>`;
+                    } else if (t.status === 'Completed') {
+                        let winHtml = '';
+                        if(t.winners) Object.values(t.winners).forEach(w => winHtml += `<span class="winner-display uppercase font-black">${w}</span>`);
+                        btnHTML = `<div class="w-full mt-2 bg-slate-800 rounded-xl p-3 border border-yellow-900/30 text-center uppercase font-black"><p class="text-[9px] text-yellow-500 mb-1 italic tracking-widest uppercase">Champions</p>${winHtml || '<p class="text-[10px] text-slate-500 uppercase">Results Pending</p>'}</div>`;
+                    } else if (isF) {
+                        btnHTML = `<div class="w-full mt-2 py-2.5 bg-red-950/20 text-red-500 rounded-xl text-center font-black uppercase text-[10px]">FULL</div>`;
+                    } else {
+                        btnHTML = `<button onclick="startJoinArena('${t.key}', ${t.entry_fee}, '${t.match_type}', '${t.title}', ${pc}, ${t.max_players})" class="w-full mt-2 py-2.5 rounded-xl font-black uppercase text-[10px] ${t.is_super ? 'btn-gold' : 'btn-blue'} shadow-lg italic">Join Arena (₹${t.entry_fee})</button>`;
+                    }
+                    
+                    const html = `<div class="gamer-card ${t.is_super ? 'super-match-border thunder-flash' : ''}">
+                        <div class="${t.is_super ? 'super-card-inner' : ''}">
+                            ${t.is_super ? '<div class="super-tag">SUPER</div>' : ''}
+                            <img src="${t.thumbnail}" class="match-thumb">
+                            <div class="details-area uppercase font-black italic">
+                                <div class="flex justify-between items-start mb-1 text-white italic font-orbitron"><h3 class="truncate pr-2 ${t.is_super ? 'text-lg' : 'text-[14px]'}">${t.title}</h3><p style="color:var(--neon-green); font-size: 19px; font-family:Orbitron;">₹${t.prize_pool}</p></div>
+                                <div class="flex justify-between items-center text-[10px] text-slate-400 mb-2">
+                                    <span>Slots: <b class="${isF ? 'text-red-500' : 'text-slate-200'}">${pc}/${t.max_players}</b></span>
+                                    <span>Mode: ${t.match_type}</span>
+                                    <span id="${timerID}" class="timer-box font-orbitron">${t.status.toUpperCase()}</span>
+                                </div>
+                                ${btnHTML}
+                            </div>
+                        </div>
+                    </div>`;
+                    if(t.is_super && t.status === 'Upcoming') sl.innerHTML += html; else nl.innerHTML += html;
+                    if(t.status === 'Upcoming' && t.match_time) startLiveTimer(timerID, t.match_time);
+                });
+            });
+        }
+
+        function startLiveTimer(id, date) {
+            const target = new Date(date).getTime();
+            activeIntervals[id] = setInterval(() => {
+                const diff = target - Date.now();
+                const el = document.getElementById(id); if(!el) return;
+                if(diff <= 0) { el.innerText = "STARTING"; clearInterval(activeIntervals[id]); }
+                else { 
+                    let h = Math.floor(diff/3600000); let m = Math.floor((diff%3600000)/60000); let s = Math.floor((diff%60000)/1000); 
+                    el.innerText = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`; 
+                }
+            }, 1000);
+        }
+
+        function payViaApp(app) {
+            const amt = document.getElementById('add-amount').value; if(!amt || amt < 10) return alert("Min Deposit ₹10");
+            const upi = settings.adminUpi; if(!upi) return alert("Wait for Admin!");
+            let url = `upi://pay?pa=${upi}&pn=ElitePro&am=${amt}&cu=INR`;
+            if(app === 'phonepe') url = `phonepe://pay?pa=${upi}&pn=ElitePro&am=${amt}&cu=INR`;
+            else if(app === 'paytm') url = `paytmmp://pay?pa=${upi}&pn=ElitePro&am=${amt}&cu=INR`;
+            else if(app === 'gpay') url = `tez://upi/pay?pa=${upi}&pn=ElitePro&am=${amt}&cu=INR`; 
+            window.location.href = url;
+        }
+
+        function claimPrize() { 
+            const inputCode = document.getElementById('redeem-input').value.trim().toUpperCase(); if(!inputCode) return alert("Enter Win Code!"); 
+            db.ref('winCodes/' + inputCode).once('value', snap => {
+                if(!snap.exists()) return alert("Invalid Code!");
+                const cData = snap.val(); if(cData.status === 'used') return alert("Used by " + cData.usedBy);
+                const tk = db.ref().push().key;
+                db.ref(`winCodes/${inputCode}`).update({ status: 'used', usedBy: userData.username });
+                db.ref(`users/${currentUser.uid}/wallet`).transaction(w => (w || 0) + Number(cData.amount));
+                db.ref(`users/${currentUser.uid}/winningBalance`).transaction(w => (w || 0) + Number(cData.amount));
+                db.ref(`users/${currentUser.uid}/transactions/${tk}`).set({ amount: cData.amount, type: 'credit', note: 'Win Code Claimed: ' + inputCode, status: 'success', date: Date.now() });
+                alert("Rewards Added!"); document.getElementById('redeem-input').value='';
+            }); 
+        }
+
+        async function requestRedeemCode() {
+            const amt = Number(document.getElementById('playcode-amt').value); if(amt < 30 || amt > 800) return alert("₹30-800");
+            const freshSnap = await db.ref('users/' + currentUser.uid + '/winningBalance').once('value');
+            if(Number(freshSnap.val()) < amt) return alert("Insufficient Winnings!");
+            const rid = db.ref().push().key;
+            db.ref(`users/${currentUser.uid}/wallet`).transaction(w => (w || 0) - amt);
+            db.ref(`users/${currentUser.uid}/winningBalance`).transaction(w => (w || 0) - amt);
+            db.ref(`redeemCodeRequests/${rid}`).set({ uid: currentUser.uid, username: userData.username, amount: amt, status: 'pending', time: Date.now() });
+            db.ref(`users/${currentUser.uid}/transactions/${rid}`).set({ amount: amt, type: 'debit', note: 'Play Store Redeem Request', status: 'pending', date: Date.now() });
+            alert("Requested!"); closeModal('modal-playcode');
+        }
+
+        function submitAddMoney() {
+            const a = Number(document.getElementById('add-amount').value); const u = document.getElementById('txn-id').value;
+            if(a < 10 || u.length < 12) return alert("Min ₹10 & 12-Digit UTR ID!");
+            const rid = db.ref().push().key;
+            db.ref('addMoneyRequests/' + rid).set({ uid: currentUser.uid, username: userData.username, amount: a, utr: u, status: 'pending', time: Date.now() }).then(() => { 
+                db.ref(`users/${currentUser.uid}/transactions/${rid}`).set({ amount: a, type: 'credit', note: 'Deposit Verification', status: 'pending', date: Date.now() });
+                alert("Ticket Sent!"); closeModal('modal-add'); 
+            });
+        }
+
+        async function submitWithdraw() {
+            const a = Number(document.getElementById('withdraw-amount').value); const u = document.getElementById('withdraw-upi').value.trim();
+            if(a < 50 || a > 2000) return alert("Range ₹50-2000");
+            const freshSnap = await db.ref('users/' + currentUser.uid + '/winningBalance').once('value');
+            if(Number(freshSnap.val()) < a) return alert("Low Winning Balance!");
+            const rid = db.ref().push().key;
+            db.ref(`users/${currentUser.uid}/wallet`).transaction(w => (w || 0) - a);
+            db.ref(`users/${currentUser.uid}/winningBalance`).transaction(w => (w || 0) - a);
+            db.ref(`withdrawRequests/${rid}`).set({ uid: currentUser.uid, username: userData.username, amount: a, upi: u, status: 'pending', time: Date.now() });
+            db.ref(`users/${currentUser.uid}/transactions/${rid}`).set({ amount: a, type: 'debit', note: 'Withdrawal Pending', status: 'pending', date: Date.now() });
+            alert("Requested Successfully!"); closeModal('modal-withdraw');
+        }
+
+        function renderHistory(txns) {
+            const l = document.getElementById('txn-history'); l.innerHTML = ''; if(!txns) return;
+            Object.values(txns).reverse().forEach(t => {
+                const c = t.type === 'credit'; const st = t.status || 'success';
+                let col = st === 'pending' ? 'text-yellow-500' : (st === 'rejected' ? 'text-red-600' : (c ? 'text-emerald-500' : 'text-red-400'));
+                let note = t.redeemCode ? `Code Approved: ${t.redeemCode}` : t.note;
+                l.innerHTML += `<div class="bg-slate-900 p-4 rounded-xl flex justify-between items-center border border-slate-800 mb-2 text-white italic font-black uppercase shadow-sm"><div><p class="text-xs text-slate-200">${note}</p><p class="text-[9px] opacity-40 uppercase">${new Date(t.date).toLocaleString()} | ${st}</p></div><p class="font-black ${col}">${c?'+':'-'}₹${t.amount}</p></div>`;
+            });
+        }
+
+        function editProfileName() { const n = prompt("Change Gamer IGN:", userData.username); if(n && n.length > 2) db.ref(`users/${currentUser.uid}`).update({username: n.trim()}); }
+        function copyInvite() { navigator.clipboard.writeText(userData.referralCode); alert("Invite Code Copied!"); }
+        function showSec(id) { document.querySelectorAll('.main-sec').forEach(s => s.classList.add('hidden')); document.getElementById('sec-' + id).classList.remove('hidden'); document.querySelectorAll('nav button').forEach(b => b.classList.remove('active-nav')); document.getElementById('nav-' + id).classList.add('active-nav'); }
+        
+        function handleLogin() { 
+            const e = document.getElementById('login-email').value.trim(); const p = document.getElementById('login-pass').value; 
+            auth.signInWithEmailAndPassword(e, p).then(() => hideSplash()).catch(e => alert(e.message)); 
+        }
+        
+        function handleLogout() { auth.signOut().then(() => location.reload()); }
+        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+        function toggleAuth(isL) { document.getElementById('login-form').classList.toggle('hidden', !isL); document.getElementById('signup-form').classList.toggle('hidden', isL); }
+        
+        async function handleSignup() {
+            const u = document.getElementById('signup-user').value.trim(); const e = document.getElementById('signup-email').value.trim(); const p = document.getElementById('signup-pass').value; const iv = document.getElementById('signup-invite').value.trim().toUpperCase();
+            if(!u || !e || p.length < 6) return alert("Fill all fields!");
+            try {
+                const res = await auth.createUserWithEmailAndPassword(e, p);
+                const uid = res.user.uid; const myCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+                const nu = { username: u, email: e, wallet: 0, winningBalance: 0, uid: uid, referralCode: myCode, inviteCount: 0, inviteEarned: 0, fakeUtrCount: 0 };
+                if(iv) {
+                    const snap = await db.ref('users').orderByChild('referralCode').equalTo(iv).once('value');
+                    if(snap.exists()) {
+                        const invUid = Object.keys(snap.val())[0];
+                        nu.referredBy = invUid;
+                        await db.ref(`users/${invUid}/inviteCount`).transaction(c => (c || 0) + 1);
+                    }
+                }
+                await db.ref('users/' + uid).set(nu); hideSplash(); location.reload();
+            } catch(err) { alert(err.message); }
+        }
+
+        function startJoinArena(id, fee, type, title, pc, max) {
+            const total = (Number(userData.wallet) || 0) + (Number(userData.winningBalance) || 0);
+            if(pc >= max) return alert("Match Full!"); if(total < fee) return alert("Low balance!");
+            activeMatch = { id, fee, type, title }; const con = document.getElementById('team-inputs'); con.innerHTML = '';
+            let count = type === 'SOLO' ? 1 : (type === 'SQUAD' ? 4 : 2);
+            for(let i=1; i<=count; i++) { con.innerHTML += `<input type="text" id="p-${i}" placeholder="Player ${i} IGN" class="p-3 bg-slate-800 rounded-xl mb-2 w-full text-white border border-white/5">`; }
+            openModal('modal-team');
+        }
+
+        function confirmTeamJoin() {
+            const players =[]; let count = activeMatch.type === 'SOLO' ? 1 : (activeMatch.type === 'SQUAD' ? 4 : 2);
+            for(let i=1; i<=count; i++) { const v = document.getElementById(`p-${i}`).value.trim(); if(!v) return alert("Fill names!"); players.push(v); }
+            const fee = activeMatch.fee; let walletBal = Number(userData.wallet) || 0; let winBal = Number(userData.winningBalance) || 0;
+            if (walletBal >= fee) { walletBal -= fee; } else { let rem = fee - walletBal; walletBal = 0; winBal -= rem; }
+            const tid = db.ref().push().key;
+            db.ref(`/tournaments/${activeMatch.id}/participants/${currentUser.uid}`).set({ leader: players[0], members: players, type: activeMatch.type });
+            db.ref(`/users/${currentUser.uid}/wallet`).set(walletBal);
+            db.ref(`/users/${currentUser.uid}/winningBalance`).set(winBal);
+            db.ref(`/users/${currentUser.uid}/transactions/${tid}`).set({ amount: fee, type: 'debit', note: 'Joined Match: ' + activeMatch.title, status: 'success', date: Date.now() });
+            alert("Match Joined Successfully!"); closeModal('modal-team');
+        }
+
+        async function submitRecovery() {
+            const o = document.getElementById('old-email').value.trim().toLowerCase(); 
+            if(!o) return alert("Enter old email!");
+            if (!currentUser) return alert("Please login first!");
+
+            const newMail = currentUser.email || (userData && userData.email ? userData.email : 'N/A');
+            
+            if(o === newMail.toLowerCase()) { return alert("Failed: Old email cannot be exactly same as new email!"); }
+
+            const uname = (userData && userData.username) ? userData.username : 'Gamer';
+            
+            try {
+                const oldCheck = await db.ref('users').orderByChild('email').equalTo(o).once('value');
+                if(!oldCheck.exists()) { return alert("Failed: Old email not found in our records!"); }
+
+                const reqId = db.ref('recoveryRequests').push().key;
+                
+                await db.ref(`users/${currentUser.uid}/transactions/${reqId}`).set({
+                    amount: 0, type: 'credit', note: `Recovery Requested for: ${o}`, status: 'pending', date: Date.now()
+                });
+
+                await db.ref('recoveryRequests/' + reqId).set({ 
+                    uid: currentUser.uid, username: uname, oldEmail: o, newEmail: newMail, status: 'pending', time: Date.now() 
+                });
+
+                alert("Recovery Ticket Sent Successfully!"); 
+                closeModal('modal-recovery'); 
+                document.getElementById('old-email').value = '';
+            } catch(e) { alert("Error sending request: " + e.message); }
+        }
+    </script>
+</body>
+</html>
